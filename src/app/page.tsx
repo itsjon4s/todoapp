@@ -1,90 +1,76 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from './page.module.css'
+"use client"
 
-const inter = Inter({ subsets: ['latin'] })
+import Todo from '@/components/todo'
+import { PlusCircle } from 'phosphor-react'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
+
+  const [todos, setTodos] = useState<string[]>(["Loading..."])
+  const [text, setText] = useState("")
+
+  useEffect(() => {
+    setTodos(getTasks())
+  }, [])
+
+  const getTasks = (): string[] => {
+    let tasks;
+    if(localStorage.getItem("todos") === null) {
+      tasks = []
+    } else {
+      tasks = JSON.parse(localStorage.getItem("todos") as string)
+    }
+    return tasks
+  }
+
+  const setTasks = (newTask: string): string[] => {
+    let tasks;
+    if(localStorage.getItem("todos") === null) {
+      tasks = []
+    } else {
+      tasks = JSON.parse(localStorage.getItem("todos") as string)
+    }
+    tasks.unshift(newTask)
+    localStorage.setItem("todos", JSON.stringify(tasks))
+    return tasks
+  }
+
+
+  const addTodo = (e: any) => {
+    e.preventDefault()
+    if(text.trim() === '') {
+      return
+    }
+    setTasks(text)
+    setTodos(getTasks())
+    setText('')
+  }
+
+  const deleteTodo = (str: string) => {
+    let newList;
+    const i = todos.indexOf(str);
+    newList = todos.filter((_, index) => index !== i)
+    setTodos(newList)
+    localStorage.setItem("todos", JSON.stringify(newList))
+  }
+
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <main className='m-2'>
+      <header className="text-5xl flex items-center justify-center min-h-[20vh]">
+        <h1>To do List</h1>
+      </header>
+      <form className="flex items-center justify-center min-h-[20vh]">
+        <input onChange={(e => setText(e.target.value))}  value={text} placeholder="Insert the task here" type="text" className="p-2 pl-4 text-2xl border-none rounded-3xl text-black leading-relaxed break-words" />
+        <button onClick={addTodo} className="p-2 pl-4 text-2xl border-none  rounded-3xl ml-2 cursor-pointer bg-white text-green-500 hover:text-white hover:bg-green-500" type="submit">
+          <PlusCircle className="mt-[o.3rem] ml-[-8px]" size={25}/>
+        </button>
+      </form>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-        <div className={styles.thirteen}>
-          <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="flex justify-center items-center">
+        <ul className="min-w-[30%] list-none">
+          {todos.map((val, i) => <Todo val={val} click={deleteTodo} key={i}/>)}
+        </ul>
       </div>
     </main>
   )
